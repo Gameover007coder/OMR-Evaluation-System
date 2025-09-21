@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMR Evaluation System - Upload</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-check-circle"></i> OMR Evaluation System
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="upload.html"><i class="fas fa-upload"></i> Upload</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="results.html"><i class="fas fa-list-alt"></i> Results</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <h2 class="mb-4">Upload OMR Sheets</h2>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Upload New Sheet</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Exam Version</label>
+                            <select class="form-select" id="examVersion">
+                                <option value="v1">Version 1</option>
+                                <option value="v2">Version 2</option>
+                                <option value="v3">Version 3</option>
+                                <option value="v4">Version 4</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Student ID</label>
+                            <input type="text" class="form-control" id="studentId" placeholder="Enter student ID">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Student Name</label>
+                            <input type="text" class="form-control" id="studentName" placeholder="Enter student name">
+                        </div>
+                        
+                        <div class="upload-area" id="dropZone">
+                            <i class="fas fa-cloud-upload-alt fa-3x mb-3 text-secondary"></i>
+                            <h5>Drag & Drop OMR Image</h5>
+                            <p class="text-muted">or</p>
+                            <button class="btn btn-primary" id="browseButton">Browse Files</button>
+                            <input type="file" id="fileInput" class="d-none" accept="image/*">
+                        </div>
+                        
+                        <div class="mt-3 text-center">
+                            <button class="btn btn-success" id="processButton" disabled>
+                                <i class="fas fa-cog"></i> Process OMR
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>OMR Preview</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <img src="https://via.placeholder.com/400x500?text=OMR+Preview" alt="OMR Preview" class="omr-preview mb-3" id="previewImage">
+                        <div id="processingInfo" class="d-none">
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <p class="mt-2" id="statusText">Processing image...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Batch Processing</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Upload multiple OMR sheets at once for batch processing. 
+                            The system will automatically detect student IDs and exam versions.
+                        </div>
+                        
+                        <div class="upload-area" id="batchDropZone">
+                            <i class="fas fa-folder-open fa-3x mb-3 text-secondary"></i>
+                            <h5>Drag & Drop Multiple OMR Images</h5>
+                            <p class="text-muted">or</p>
+                            <button class="btn btn-primary" id="batchBrowseButton">Select Multiple Files</button>
+                            <input type="file" id="batchFileInput" class="d-none" accept="image/*" multiple>
+                        </div>
+                        
+                        <div class="mt-3 text-center">
+                            <button class="btn btn-success" id="processBatchButton" disabled>
+                                <i class="fas fa-bolt"></i> Process Batch
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Check authentication
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            window.location.href = 'index.html';
+        }
+
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            localStorage.removeItem('authToken');
+            window.location.href = 'index.html';
+        });
+
+        // File upload functionality
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const browseButton = document.getElementById('browseButton');
+        const previewImage = document.getElementById('previewImage');
+        const processButton = document.getElementById('processButton');
+        
+        browseButton.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    processButton.disabled = false;
+                }
+                
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+        
+        // Drag and drop
+        setupDragAndDrop(dropZone, fileInput, previewImage, processButton);
+        
+        // Process button
+        processButton.addEventListener('click', processOMR);
+        
+        // Batch processing
+        const batchDropZone = document.getElementById('batchDropZone');
+        const batchFileInput = document.getElementById('batchFileInput');
+        const batchBrowseButton = document.getElementById('batchBrowseButton');
+        const processBatchButton = document.getElementById('processBatchButton');
+        
+        batchBrowseButton.addEventListener('click', () => {
+            batchFileInput.click();
+        });
+        
+        batchFileInput.addEventListener('change', function() {
+            processBatchButton.disabled = !this.files || this.files.length === 0;
+        });
+        
+        processBatchButton.addEventListener('click', processBatchOMR);
+        
+        function processOMR() {
+            const version = document.getElementById('examVersion').value;
+            const studentId = document.getElementById('studentId').value;
+            const studentName = document.getElementById('studentName').value;
+            
+            if (!studentId || !studentName) {
+                alert('Please enter both Student ID and Name');
+                return;
+            }
+            
+            const processingInfo = document.getElementById('processingInfo');
+            const statusText = document.getElementById('statusText');
+            const progressBar = document.querySelector('.progress-bar');
+            
+            processingInfo.classList.remove('d-none');
+            processButton.disabled = true;
+            
+            // Create FormData for file upload
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('version', version);
+            formData.append('student_id', studentId);
+            formData.append('student_name', studentName);
+            
+            // Simulate processing steps with actual API call
+            fetch('http://localhost:5000/api/process-omr', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+                },
+                body: formData
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.success) {
+                    statusText.innerHTML = '<span class="text-success">Processing complete! <i class="fas fa-check-circle"></i></span>';
+                    
+                    // Show results
+                    setTimeout(() => {
+                        alert(`OMR processing completed successfully!\n\nStudent: ${data.student_id}\nMath: ${data.scores.math}/20\nStatistics: ${data.scores.statistics}/20\nPython: ${data.scores.python}/20\nML: ${data.scores.ml}/20\nGenAI: ${data.scores.genai}/20\nTotal: ${data.scores.total}/100`);
+                        processingInfo.classList.add('d-none');
+                        processButton.disabled = false;
+                        
+                        // Reset form
+                        document.getElementById('studentId').value = '';
+                        document.getElementById('studentName').value = '';
+                        previewImage.src = 'https://via.placeholder.com/400x500?text=OMR+Preview';
+                    }, 1000);
+                } else {
+                    alert('Processing failed: ' + (data ? data.message : 'Unknown error'));
+                    processingInfo.classList.add('d-none');
+                    processButton.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Processing error. Please check if the backend server is running.');
+                processingInfo.classList.add('d-none');
+                processButton.disabled = false;
+            });
+        }
+        
+        function processBatchOMR() {
+            alert('Batch processing would be implemented similarly with multiple files');
+            // Implementation would be similar to processOMR but with multiple files
+        }
+    </script>
+</body>
+</html>
